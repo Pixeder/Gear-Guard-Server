@@ -14,7 +14,7 @@ type AsyncRequestHandler = (
  */
 const asyncHandler =
   (requestHandler: AsyncRequestHandler): RequestHandler =>
-  (req, res, next) => {
+  (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(requestHandler(req, res, next)).catch(next);
   };
 
