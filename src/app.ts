@@ -19,12 +19,20 @@ const app: Application = express();
 app.use(helmet());
 
 // B. CORS (Allow Frontend to connect)
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*', 
-  credentials: true, // Crucial for sending Cookies (JWT)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// app.use(cors({
+//   origin: process.env.CORS_ORIGIN || '*', 
+//   credentials: true, // Crucial for sending Cookies (JWT)
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+//   allowedHeaders: ['Content-Type', 'Authorization']
+// }));
+
+app.use(
+  cors({
+    origin: true, // 🟢 This creates a "Reflecting Origin" (Trusts everyone)
+    credentials: true, // 🟢 Allows the Login Cookie to pass through
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  })
+);
 
 // C. Rate Limiting (Basic DDoS protection)
 const limiter = rateLimit({
