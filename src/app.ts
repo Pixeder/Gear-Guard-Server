@@ -46,6 +46,15 @@ app.use(cookieParser());
 // 2. Routes
 // ============================================
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: "Welcome to GearGuard API ⚙️🛡️",
+    status: "active",
+    documentation: "/api/docs", // Optional: If you add Swagger later
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Health Check
 app.get('/health', (req, res) => {
   res.status(200).json({ 
