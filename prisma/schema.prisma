@@ -1,0 +1,132 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+// --- ENUMS ---
+enum Role {
+  Admin
+  Manager
+  Technician
+}
+
+enum RequestType {
+  Corrective
+  Preventive
+}
+
+enum RequestStatus {
+  New
+  InProgress
+  Repaired
+  Scrap
+}
+
+enum Priority {
+  Low
+  Normal
+  High
+  Urgent
+}
+
+// --- MODELS ---
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  password    String
+  role        Role     @default(Technician)
+  avatar      String?
+  department  String?
+  
+  // Relations
+  teamId      String?
+  team        Team?    @relation(fields: [teamId], references: [id])
+  
+  assignedEquipment Equipment[] // Items this user owns
+  
+  // This was missing: Requests assigned to this technician
+  assignedTickets   MaintenanceRequest[] 
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Team {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+
+  members     User[]
+  equipment   Equipment[] 
+  
+  // This was missing: Requests assigned to this Team
+  requests    MaintenanceRequest[] 
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("teams")
+}
+
+model Equipment {
+  id             String   @id @default(uuid())
+  name           String
+  serialNumber   String   @unique
+  description    String?
+  location       String
+  purchaseDate   DateTime?
+  warrantyEnd    DateTime?
+  status         String   @default("Active")
+  
+  department     String?
+  assignedUserId String?
+  assignedUser   User?    @relation(fields: [assignedUserId], references: [id])
+
+  maintenanceTeamId String
+  maintenanceTeam   Team   @relation(fields: [maintenanceTeamId], references: [id])
+  
+  // This was missing: Requests related to this Equipment
+  requests       MaintenanceRequest[]
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("equipment")
+}
+
+model MaintenanceRequest {
+  id          String        @id @default(uuid())
+  subject     String
+  description String?
+  
+  type        RequestType   @default(Corrective)
+  status      RequestStatus @default(New)
+  priority    Priority      @default(Normal)
+  
+  // Links
+  equipmentId String
+  equipment   Equipment     @relation(fields: [equipmentId], references: [id])
+  
+  teamId      String
+  team        Team          @relation(fields: [teamId], references: [id])
+  
+  technicianId String?
+  technician   User?        @relation(fields: [technicianId], references: [id])
+
+  scheduledDate DateTime?
+  duration      Int?
+  
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("maintenance_requests")
+}
