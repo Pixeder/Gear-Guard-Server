@@ -24,4 +24,18 @@ router.route("/teams/assign").post(addMemberToTeam); // Add User to Team
 router.route("/equipment").post(createEquipment); // Add Machine
 router.route("/equipment").get(getEquipment);     // List Machines
 
+// ... imports
+import { 
+  createRequest, 
+  getRequests, 
+  updateRequest 
+} from "../controllers/request.controller.js";
+
+// ... Team and Equipment routes ...
+
+// --- MAINTENANCE REQUEST ROUTES ---
+router.route("/requests").post(createRequest); // Create Ticket
+router.route("/requests").get(getRequests);    // Get List (Kanban/Calendar data)
+router.route("/requests/:id").patch(updateRequest); // Update Status/Assign
+
 export default router;
