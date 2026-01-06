@@ -7,7 +7,9 @@ import {
 } from "../controllers/team.controller.js";
 import { 
   createEquipment, 
-  getEquipment 
+  getEquipment,
+  deleteEquipment,
+  updateEquipment
 } from "../controllers/equipment.controller.js";
 
 const router = Router();
@@ -23,12 +25,16 @@ router.route("/teams/assign").post(addMemberToTeam); // Add User to Team
 // --- EQUIPMENT ROUTES ---
 router.route("/equipment").post(createEquipment); // Add Machine
 router.route("/equipment").get(getEquipment);     // List Machines
+router.delete('/equipment/:id', deleteEquipment);// Delete Machines
+router.put('/equipment/:id', updateEquipment);   // Update Machines
+
 
 // ... imports
 import { 
   createRequest, 
   getRequests, 
-  updateRequest 
+  updateRequest,
+  updateRequestStatus
 } from "../controllers/request.controller.js";
 
 // ... Team and Equipment routes ...
@@ -37,5 +43,9 @@ import {
 router.route("/requests").post(createRequest); // Create Ticket
 router.route("/requests").get(getRequests);    // Get List (Kanban/Calendar data)
 router.route("/requests/:id").patch(updateRequest); // Update Status/Assign
+router.patch('/requests/:id/status', updateRequestStatus);
+
+import { getDashboardStats } from "../controllers/stats.controller.js";
+router.route("/stats/dashboard").get(getDashboardStats);
 
 export default router;

@@ -107,3 +107,45 @@ export const updateRequest = asyncHandler(async (req: Request, res: Response) =>
     new apiResponse(200, updatedRequest, "Request updated successfully")
   );
 });
+
+export const updateRequestStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // Expecting: "New" | "InProgress" | "Repaired" | "Scrap"
+
+    // Validate Status against your Enum
+    const validStatuses = ['New', 'InProgress', 'Repaired', 'Scrap'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status provided',
+      });
+    }
+
+    const updatedRequest = await prisma.maintenanceRequest.update({
+      where: { id },
+      data: {
+        status: status, 
+        // Optional: If moving to "Repaired", set duration or closedAt time?
+        // updatedAt is handled automatically by Prisma
+      },
+      include: {
+        equipment: true, // Return data needed for UI update
+        technician: true
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Status updated successfully',
+      data: updatedRequest,
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update request status',
+    });
+  }
+};

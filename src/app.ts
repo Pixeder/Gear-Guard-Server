@@ -10,6 +10,7 @@ import rateLimit from 'express-rate-limit';
 import { errorHandler } from './middlewares/error.middleware.js';
 
 const app: Application = express();
+app.set("trust proxy", 1);
 
 // ============================================
 // 1. Global Middlewares
@@ -28,11 +29,12 @@ app.use(helmet());
 
 app.use(
   cors({
-    origin: true, // 🟢 This creates a "Reflecting Origin" (Trusts everyone)
+    origin: process.env.CORS_ORIGIN || '*', // 🟢 This creates a "Reflecting Origin" (Trusts everyone)
     credentials: true, // 🟢 Allows the Login Cookie to pass through
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
 );
+
 
 // C. Rate Limiting (Basic DDoS protection)
 const limiter = rateLimit({

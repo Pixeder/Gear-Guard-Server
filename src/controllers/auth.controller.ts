@@ -4,10 +4,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { apiError, apiResponse, asyncHandler } from "../libs/index.js";
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  maxAge: 24 * 60 * 60 * 1000, // 1 day
+const options = {
+    httpOnly: true,
+    secure: true,       // Required for HTTPS
+    sameSite: "none" as const,   // Required for Cross-Site (Frontend != Backend)
+    maxAge: 7 * 24 * 60 * 60 * 1000
 };
 
 // --- REGISTER ---
@@ -52,7 +53,7 @@ export const registerUser = asyncHandler(
 
     return res
       .status(201)
-      .cookie("token", token, cookieOptions)
+      .cookie("token", token, options)
       .json(
         new apiResponse(
           201,
@@ -100,7 +101,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
   return res
     .status(200)
-    .cookie("token", token, cookieOptions)
+    .cookie("token", token, options)
     .json(new apiResponse(200, userWithoutPassword, "Login successful"));
 });
 
@@ -108,6 +109,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
   return res
     .status(200)
-    .clearCookie("token", cookieOptions)
+    .clearCookie("token", options)
     .json(new apiResponse(200, {}, "Logged out successfully"));
 });

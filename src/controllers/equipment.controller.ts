@@ -59,3 +59,43 @@ export const getEquipment = asyncHandler(async (req: Request, res: Response) => 
     new apiResponse(200, equipmentList, "Equipment list fetched successfully")
   );
 });
+
+export const deleteEquipment = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    await prisma.$transaction([
+      // 1. Delete all tickets associated with this equipment
+      prisma.maintenanceRequest.deleteMany({
+        where: { equipmentId: id }
+      }),
+      // 2. Now it is safe to delete the equipment
+      prisma.equipment.delete({
+        where: { id }
+      })
+    ]);
+    console.log(typeof id.trim());
+    
+    return res.status(200).json(new apiResponse(200, {}, "Equipment deleted successfully"));
+  } catch (error) {
+    // Handle case where item doesn't exist or has constraints
+    throw new apiError(500, "Failed to delete equipment");
+  }
+};
+
+export const updateEquipment = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, serialNumber, location, department, status, maintenanceTeamId } = req.body;
+
+  // Check if exists
+  const exists = await prisma.equipment.findUnique({ where: { id } });
+  if (!exists) throw new apiError(404, "Equipment not found");
+
+  const updated = await prisma.equipment.update({
+    where: { id },
+    data: { name, serialNumber, location, department, status, maintenanceTeamId }
+  });
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, updated, "Equipment updated successfully"));
+});
